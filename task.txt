@@ -1,0 +1,86 @@
+===================================== PROTOCOL DESCRIPTION =====================================================
+
+       Klient                                          Server
+
+						---------- connect ----------->
+														server requires the username                                                    
+						<--------- message 200 ---------
+client sends the username
+						---------- message U ---------->
+														server stores username (and does 
+														not perform it's check). Server 
+														requires the password
+						<--------- message 201 ---------
+client sends the password
+						---------- message P ---------->
+														server checks username and password
+										
+														if the check failed, send message 500
+														and finish connection
+
+						<--------- message 500 ---------
+						                                close()
+						                                        
+						                     OR
+
+														if the check is successful, send message 202
+						<--------- message 202 ---------
+client can send any number of 
+messages I or F
+
+send an information 
+message I
+						---------- message I ---------->
+														if the syntax is not correct, send message 501 
+														and close connection
+
+														otherwise, save the message to log file and 
+														send back message 202
+
+						<--------- message 202 ---------
+
+
+send a photo message F
+
+						---------- message F ----------> 
+						                                if the syntax is not correct, send message 501 
+														and close connection
+
+						                               	if checksum from message F is not valid, send 
+														message 300 but do not close connection. 
+														The message data is not saved also.
+
+								
+														otherwise, save the picture to file with name 
+														fotoNNN
+and send back message 202
+						<--------- message 202 ---------
+client keeps sending 
+messages I or F
+until it closes connection
+
+close()
+			                                            server reacts by closing connection
+
+			                                            close()
+
+	after 45 seconds from the start, connection is closed by the server (if it is not closed yet)
+
+================================================================================================================
+
+
+===================================== MESSAGE FORMAT DESCRIPTION ===============================================
+
+U	client username		Text string that starts with 'Robot'. Length is not limited. 
+						Can contain any symbols except '\r\n'. Ends with '\r\n'.
+
+P	client password		Sum of ASCII values of username's chars in decimal format. Ends with '\r\n'.
+
+I	client information	INFO <space> <string of any symbols except '\r\n'>  \r\n
+
+F	photos				FOTO <space> <length of row data> <space> <row data> <checksum>
+
+
+================================================================================================================
+
+The task and the protocol is designed by employees of CTU. 
